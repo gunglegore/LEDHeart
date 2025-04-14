@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<head>
+  <title>PLEASE WORK</title>
+</head>
+<body>
+  <h1>Bluetooth Hello Sender</h1>
+  <button id="connect">Connect & Send "Hello"</button>
+  <p id="status">Status: Idle</p>
+
+  <script>
+    document.getElementById('connect').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      try {
+        status.textContent = 'Status: Requesting device...';
+
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // Replace with correct service UUID
+        });
+
+        status.textContent = `Status: Connecting to GATT server...`;
+        const server = await device.gatt.connect();
+
+        const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+        const characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+        const encoder = new TextEncoder();
+        await characteristic.writeValue(encoder.encode('hello'));
+
+        status.textContent = 'Status: Message "hello" sent!';
+      } catch (error) {
+        status.textContent = 'Error: ' + error;
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
